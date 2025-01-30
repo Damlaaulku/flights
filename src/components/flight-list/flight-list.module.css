@@ -1,0 +1,13 @@
+.card {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.selectedCard {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid var(--mantine-color-blue-text)
+}
