@@ -7,7 +7,7 @@ function FlightResult({
   selectedReturnFlight,
 }: FlightResultProps) {
   const formatDate = (date: string | undefined) => {
-    if (!date) return "N/A"; // or you can return a default value or message
+    if (!date) return "N/A";
     return new Date(date).toLocaleString();
   };
 
