@@ -12,30 +12,27 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { getAirports } from "@/services/api";
 import { useDebouncedValue } from "@mantine/hooks";
-import classes from "./search-form.module.css";
 import { useForm } from "@mantine/form";
-import FlightList from "../flight-list/flight-list";
 import { IconCalendar } from "@tabler/icons-react";
+import FlightList from "../flight-list/flight-list";
+import classes from "./search-form.module.css";
+import { AirportOption, FormValues } from "@/types/search-form";
 
 export default function SearchForm() {
   const [departureDate, setDepartureDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(null);
-  const [fromQuery, setFromQuery] = useState("");
-  const [toQuery, setToQuery] = useState("");
-  const [isClicked, setIsClicked] = useState(false);
-  const [fromAirports, setFromAirports] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const [toAirports, setToAirports] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const [fromQuery, setFromQuery] = useState<string>("");
+  const [toQuery, setToQuery] = useState<string>("");
+  const [isClicked, setIsClicked] = useState<boolean>(false);
+  const [fromAirports, setFromAirports] = useState<AirportOption[]>([]);
+  const [toAirports, setToAirports] = useState<AirportOption[]>([]);
   const [selectedFrom, setSelectedFrom] = useState<string | null>(null);
   const [selectedTo, setSelectedTo] = useState<string | null>(null);
   const [passengerCount, setPassengerCount] = useState<string | null>("1");
   const [debouncedFromQuery] = useDebouncedValue(fromQuery, 500);
   const [debouncedToQuery] = useDebouncedValue(toQuery, 500);
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     initialValues: {
       originSkyId: "",
       destinationSkyId: "",
@@ -45,24 +42,29 @@ export default function SearchForm() {
     },
   });
 
-  const fetchAirports = useCallback(async (query: string, setAirports: any) => {
-    if (!query) {
-      setAirports([]);
-      return;
-    }
-    try {
-      const data = await getAirports({ query });
-      if (data && data.data) {
-        const airportOptions = data.data.map((airport: any) => ({
-          value: `${airport.entityId}, ${airport.skyId}`,
-          label: `${airport.skyId} (${airport.presentation.title})`,
-        }));
-        setAirports(airportOptions);
+  const fetchAirports = useCallback(
+    async (query: string, setAirports: (airports: AirportOption[]) => void) => {
+      if (!query) {
+        setAirports([]);
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching airports:", error);
-    }
-  }, []);
+      try {
+        const data = await getAirports({ query });
+        if (data?.data) {
+          const airportOptions: AirportOption[] = data.data.map(
+            (airport: any) => ({
+              value: `${airport.entityId}, ${airport.skyId}`,
+              label: `${airport.skyId} (${airport.presentation.title})`,
+            })
+          );
+          setAirports(airportOptions);
+        }
+      } catch (error) {
+        console.error("Error fetching airports:", error);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchAirports(debouncedFromQuery, setFromAirports);
@@ -112,6 +114,7 @@ export default function SearchForm() {
           </Title>
           <Flex direction="column" gap={16}>
             <Select
+              allowDeselect={false}
               label="From"
               placeholder="Search departure airport"
               data={fromAirports}
@@ -121,6 +124,7 @@ export default function SearchForm() {
               onChange={setSelectedFrom}
             />
             <Select
+              allowDeselect={false}
               label="To"
               placeholder="Search destination airport"
               data={toAirports}
@@ -130,19 +134,21 @@ export default function SearchForm() {
               onChange={setSelectedTo}
             />
             <DatePickerInput
+              allowDeselect={false}
               rightSection={<IconCalendar size={18} stroke={1.5} />}
               label="Departure date"
               placeholder="Pick date"
               value={departureDate}
-              onChange={(date) => setDepartureDate(date)}
+              onChange={setDepartureDate}
               minDate={new Date()}
             />
             <DatePickerInput
+              allowDeselect={false}
               rightSection={<IconCalendar size={18} stroke={1.5} />}
               label="Return date"
               placeholder="Pick date"
               value={returnDate}
-              onChange={(date) => setReturnDate(date)}
+              onChange={setReturnDate}
               minDate={departureDate || new Date()}
             />
             <Select
